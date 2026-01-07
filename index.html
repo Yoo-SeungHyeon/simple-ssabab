@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>싸밥 - 싸피 대전 식단표</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>싸밥</h1>
+            <p class="subtitle">싸피 대전 캠퍼스 식단표</p>
+        </header>
+
+        <nav class="date-nav">
+            <button id="prevDay" class="nav-btn">&lt;</button>
+            <h2 id="currentDate"></h2>
+            <button id="nextDay" class="nav-btn">&gt;</button>
+        </nav>
+
+        <main id="menuContainer">
+            <div class="loading">메뉴를 불러오는 중...</div>
+        </main>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
