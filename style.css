@@ -187,6 +187,7 @@ body {
 
 .loading,
 .notice {
+    grid-column: 1 / -1;
     border: 1px solid var(--line);
     border-radius: 16px;
     background: #fffefb;
@@ -244,3 +245,4 @@ body {
         scroll-behavior: auto !important;
     }
 }
+
