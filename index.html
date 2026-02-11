@@ -1,38 +1,40 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">    
-    <!-- Google tag (gtag.js) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-1SJYXEX560"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
+        function gtag(){dataLayer.push(arguments);} 
         gtag('js', new Date());
-
         gtag('config', 'G-1SJYXEX560');
     </script>
-    <title>싸밥 - 싸피 대전 식단표</title>
+    <title>쌉밥 - 오늘의 식단</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-    <div class="container">
-        <header>
-            <h1>싸밥</h1>
-            <p class="subtitle">싸피 대전 캠퍼스 식단표</p>
-        </header>
+    <div class="page-wrap">
+        <div class="board">
+            <header class="hero">
+                <p class="hero-kicker">오늘의 급식 안내</p>
+                <h1>오늘의 식단</h1>
+                <p class="subtitle">A/B 메뉴를 날짜별로 확인해요</p>
+            </header>
 
-        <nav class="date-nav">
-            <button id="prevDay" class="nav-btn">&lt;</button>
-            <h2 id="currentDate"></h2>
-            <button id="nextDay" class="nav-btn">&gt;</button>
-        </nav>
+            <nav class="date-nav" aria-label="날짜 이동">
+                <button id="prevDay" class="nav-btn" type="button" aria-label="이전 날짜">이전</button>
+                <h2 id="currentDate"></h2>
+                <button id="nextDay" class="nav-btn" type="button" aria-label="다음 날짜">다음</button>
+            </nav>
 
-        <main id="menuContainer">
-            <div class="loading">메뉴를 불러오는 중...</div>
-        </main>
-
+            <main id="menuContainer" aria-live="polite">
+                <div class="loading">메뉴를 불러오는 중입니다...</div>
+            </main>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

@@ -1,16 +1,12 @@
-// Supabase 클라이언트 초기화
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+﻿const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// 현재 표시 중인 날짜
 let currentDate = new Date();
 
-// DOM 요소
 const menuContainer = document.getElementById('menuContainer');
 const currentDateEl = document.getElementById('currentDate');
 const prevBtn = document.getElementById('prevDay');
 const nextBtn = document.getElementById('nextDay');
 
-// 날짜 포맷팅
 function formatDate(date) {
     const days = ['일', '월', '화', '수', '목', '금', '토'];
     const year = date.getFullYear();
@@ -20,7 +16,6 @@ function formatDate(date) {
     return `${year}.${month}.${day} (${dayOfWeek})`;
 }
 
-// DB용 날짜 포맷 (YYYY-MM-DD)
 function toDBDate(date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -28,46 +23,64 @@ function toDBDate(date) {
     return `${year}-${month}-${day}`;
 }
 
-// 주말 체크
 function isWeekend(date) {
     const day = date.getDay();
     return day === 0 || day === 6;
 }
 
-// 메뉴 카드 생성
-function createMenuCard(type, items) {
-    const typeLabel = type === 'A' ? 'A 메뉴' : 'B 메뉴';
-    const typeClass = type === 'A' ? 'menu-a' : 'menu-b';
+function sanitizeItems(items) {
+    if (!Array.isArray(items)) return [];
+    return items
+        .map((item) => String(item).trim())
+        .filter((item) => item.length > 0);
+}
 
+function iconSvg() {
     return `
-        <div class="menu-card ${typeClass}">
-            <div class="menu-header">
-                <span class="menu-badge">${typeLabel}</span>
-            </div>
-            <div class="menu-items">
-                ${items.map(item => `<div class="menu-item">${item}</div>`).join('')}
-            </div>
-        </div>
+        <svg class="notice-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 3a9 9 0 1 0 9 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M12 7.5v5.2l3.4 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
     `;
 }
 
-// 메뉴 불러오기
+function createNotice(title, description) {
+    return `
+        <section class="notice">
+            ${iconSvg()}
+            <p class="notice-title">${title}</p>
+            <p>${description}</p>
+        </section>
+    `;
+}
+
+function createMenuCard(type, items) {
+    const typeClass = type === 'A' ? 'menu-a' : 'menu-b';
+    const title = type === 'A' ? 'A 메뉴' : 'B 메뉴';
+
+    return `
+        <section class="menu-card ${typeClass}" aria-label="${title}">
+            <header class="menu-header">
+                <p class="menu-title"><span class="menu-dot" aria-hidden="true"></span>${title}</p>
+                <span class="menu-tag">${items.length}개</span>
+            </header>
+            <ul class="menu-track" role="list">
+                ${items.map((item) => `<li class="menu-item">${item}</li>`).join('')}
+            </ul>
+        </section>
+    `;
+}
+
 async function loadMenu() {
     const dateStr = toDBDate(currentDate);
     currentDateEl.textContent = formatDate(currentDate);
 
-    // 주말 체크
     if (isWeekend(currentDate)) {
-        menuContainer.innerHTML = `
-            <div class="weekend">
-                <div class="weekend-icon">🌴</div>
-                <p>주말에는 식사가 제공되지 않습니다</p>
-            </div>
-        `;
+        menuContainer.innerHTML = createNotice('주말에는 식단이 없습니다', '평일 식단을 확인해 주세요.');
         return;
     }
 
-    menuContainer.innerHTML = '<div class="loading">메뉴를 불러오는 중...</div>';
+    menuContainer.innerHTML = '<div class="loading">메뉴를 불러오는 중입니다...</div>';
 
     try {
         const { data, error } = await supabaseClient
@@ -77,58 +90,31 @@ async function loadMenu() {
             .single();
 
         if (error || !data) {
-            menuContainer.innerHTML = `
-                <div class="no-menu">
-                    <div class="no-menu-icon">🍽️</div>
-                    <p>등록된 메뉴가 없습니다</p>
-                </div>
-            `;
+            menuContainer.innerHTML = createNotice('등록된 메뉴가 없어요', '다른 날짜를 선택해 보세요.');
             return;
         }
 
+        const menuA = sanitizeItems(data.menu_a);
+        const menuB = sanitizeItems(data.menu_b);
+
         let html = '';
 
-        // A 메뉴
-        if (data.menu_a && data.menu_a.length > 0) {
-            html += createMenuCard('A', data.menu_a);
-        }
+        if (menuA.length > 0) html += createMenuCard('A', menuA);
+        if (menuB.length > 0) html += createMenuCard('B', menuB);
 
-        // B 메뉴
-        if (data.menu_b && data.menu_b.length > 0) {
-            html += createMenuCard('B', data.menu_b);
-        }
-
-        if (html === '') {
-            menuContainer.innerHTML = `
-                <div class="no-menu">
-                    <div class="no-menu-icon">🍽️</div>
-                    <p>등록된 메뉴가 없습니다</p>
-                </div>
-            `;
-        } else {
-            menuContainer.innerHTML = html;
-        }
-
+        menuContainer.innerHTML = html || createNotice('등록된 메뉴가 없어요', '다른 날짜를 선택해 보세요.');
     } catch (err) {
         console.error('메뉴 로드 실패:', err);
-        menuContainer.innerHTML = `
-            <div class="no-menu">
-                <div class="no-menu-icon">⚠️</div>
-                <p>메뉴를 불러올 수 없습니다</p>
-            </div>
-        `;
+        menuContainer.innerHTML = createNotice('메뉴를 불러오지 못했어요', '잠시 후 다시 시도해 주세요.');
     }
 }
 
-// 날짜 이동
 function changeDate(days) {
     currentDate.setDate(currentDate.getDate() + days);
     loadMenu();
 }
 
-// 이벤트 리스너
 prevBtn.addEventListener('click', () => changeDate(-1));
 nextBtn.addEventListener('click', () => changeDate(1));
 
-// 초기 로드
 loadMenu();
